@@ -10,6 +10,7 @@ RUN ${HOME}/.cargo/bin/cargo install -f cargo-fuzz
 ## Add source code to the build stage.
 ADD . /src
 WORKDIR /src
+RUN apt install -y zlib1g-dev
 RUN cd fuzz && ${HOME}/.cargo/bin/cargo +nightly fuzz build --all-features
 
 # Package Stage
