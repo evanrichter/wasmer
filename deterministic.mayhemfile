@@ -2,4 +2,4 @@ project: wasmer
 target: deterministic
 
 cmds:
-  - cmd: /disk
+  - cmd: /deterministic

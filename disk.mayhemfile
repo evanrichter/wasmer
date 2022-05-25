@@ -1,5 +1,0 @@
-project: wasmer
-target: deterministic
-
-cmds:
-  - cmd: /deterministic
