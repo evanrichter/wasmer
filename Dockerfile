@@ -1,8 +1,11 @@
 # Build Stage
-FROM rustlang/rust:nightly as builder
+FROM ubuntu:20.04 as builder
 
 ## Install build dependencies.
-RUN cargo install -f cargo-fuzz
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y llvm-12-dev cmake clang curl
+RUN curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+RUN ${HOME}/.cargo/bin/rustup default nightly
+RUN ${HOME}/.cargo/bin/cargo install -f cargo-fuzz
 
 ## Add source code to the build stage.
 ADD . /src
@@ -10,7 +13,7 @@ WORKDIR /src
 RUN cd fuzz && cargo +nightly fuzz build --all-features
 
 # Package Stage
-FROM rustlang/rust:nightly
+FROM ubuntu:20.04
 
 COPY --from=builder /src/target/x86_64-unknown-linux-gnu/release/deterministic /
 COPY --from=builder /src/target/x86_64-unknown-linux-gnu/release/equivalence_universal /
