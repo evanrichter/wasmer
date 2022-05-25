@@ -2,7 +2,7 @@
 FROM ubuntu:20.04 as builder
 
 ## Install build dependencies.
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y llvm-12-dev cmake clang curl
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y llvm-12-dev libclang-common-12-dev cmake clang curl
 RUN curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN ${HOME}/.cargo/bin/rustup default nightly
 RUN ${HOME}/.cargo/bin/cargo install -f cargo-fuzz
