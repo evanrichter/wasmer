@@ -7,7 +7,7 @@ RUN cargo install -f cargo-fuzz
 ## Add source code to the build stage.
 ADD . /src
 WORKDIR /src
-RUN cd fuzz && cargo +nightly fuzz build
+RUN cd fuzz && cargo +nightly fuzz build --all-features
 
 # Package Stage
 FROM rustlang/rust:nightly
