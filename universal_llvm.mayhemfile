@@ -1,0 +1,5 @@
+project: wasmer
+target: universal-llvm
+
+cmds:
+  - cmd: /universal_llvm

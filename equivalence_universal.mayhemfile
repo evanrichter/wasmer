@@ -1,0 +1,5 @@
+project: wasmer
+target: equivalence-universal
+
+cmds:
+  - cmd: /equivalence_universal

@@ -1,0 +1,103 @@
+name: Mayhem
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+      
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DETERMINISTIC: deterministic.mayhemfile
+  EQUIVALENCE_UNIVERSAL: equivalence_universal.mayhemfile
+  UNIVERSAL_CRANELIFT: universal_cranelift.mayhemfile
+  UNIVERSAL_SINGLEPASS: universal_singlepass.mayhemfile
+  DYLIB_CRANELIFT: dylib_cranelift.mayhemfile
+  METERING: metering.mayhemfile
+  UNIVERSAL_LLVM: universal_llvm.mayhemfile
+
+jobs:
+  build:
+    name: '${{ matrix.os }} shared=${{ matrix.shared }} ${{ matrix.build_type }}'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        shared: [false]
+        build_type: [Release]
+        include:
+          - os: ubuntu-latest
+            triplet: x64-linux
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Start analysis for DETERMINISTIC
+        uses: ForAllSecure/mcode-action@v1
+        with:
+          mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
+          args: --image ${{ steps.meta.outputs.tags }} --file ${{ env.DETERMINISTIC }} --duration 300
+          sarif-output: sarif
+
+      - name: Start analysis for EQUIVALENCE_UNIVERSAL
+        uses: ForAllSecure/mcode-action@v1
+        with:
+          mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
+          args: --image ${{ steps.meta.outputs.tags }} --file ${{ env.EQUIVALENCE_UNIVERSAL }} --duration 300
+          sarif-output: sarif
+
+      - name: Start analysis for UNIVERSAL_CRANELIFT
+        uses: ForAllSecure/mcode-action@v1
+        with:
+          mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
+          args: --image ${{ steps.meta.outputs.tags }} --file ${{ env.UNIVERSAL_CRANELIFT }} --duration 300
+          sarif-output: sarif
+
+      - name: Start analysis for UNIVERSAL_SINGLEPASS
+        uses: ForAllSecure/mcode-action@v1
+        with:
+          mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
+          args: --image ${{ steps.meta.outputs.tags }} --file ${{ env.UNIVERSAL_SINGLEPASS }} --duration 300
+          sarif-output: sarif
+
+      - name: Start analysis for DYLIB_CRANELIFT
+        uses: ForAllSecure/mcode-action@v1
+        with:
+          mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
+          args: --image ${{ steps.meta.outputs.tags }} --file ${{ env.DYLIB_CRANELIFT }} --duration 300
+          sarif-output: sarif
+
+      - name: Start analysis for METERING
+        uses: ForAllSecure/mcode-action@v1
+        with:
+          mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
+          args: --image ${{ steps.meta.outputs.tags }} --file ${{ env.METERING }} --duration 300
+          sarif-output: sarif
+
+      - name: Start analysis for UNIVERSAL_LLVM
+        uses: ForAllSecure/mcode-action@v1
+        with:
+          mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
+          args: --image ${{ steps.meta.outputs.tags }} --file ${{ env.UNIVERSAL_LLVM }} --duration 300
+          sarif-output: sarif
+
